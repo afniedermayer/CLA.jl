@@ -1,3 +1,6 @@
+# calculating the turning points given by Markowitz' critical line algorithm
+# see http://www.vwl.unibe.ch/papers/dp/dp0701.pdf p. 22 for a description
+
 using Debug
 using Logging
 import Base.max
