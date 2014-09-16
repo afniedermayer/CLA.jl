@@ -1,4 +1,4 @@
-using Debug
+#using Debug
 import Base.max
 
 # extend max to allow for "nothing" as a parameter
@@ -15,13 +15,11 @@ argmax(x, condition) =
     end
 
 function calculate_turningpoints_general(μ, Σ, l, u)
-    #    @bp
     𝔽, w0 = starting_solution(μ, l, u)
     𝔹 = setdiff(1:length(μ), 𝔽)
     W = {w0}
     λcurrent = Inf
     t = 0
-    #    WB = {}
     λcurrent_list = {}
     𝔽list = {}
     while true
@@ -31,24 +29,14 @@ function calculate_turningpoints_general(μ, Σ, l, u)
         # Case b) Asset on its bound becomes free
         i_outside, λ_i_outside = asset_becomes_free(μ, Σ,
                                                     𝔽, λcurrent, W[end])
-        println("W: $W")
-        println("i_inside: $i_inside, λ_i_inside: $λ_i_inside, b; $b")
-        println("i_outside: $i_outside, λ_i_outside: $λ_i_outside, b; $b")
-        println("𝔽: $𝔽, 𝔹: $𝔹")
-        println("W: $(W[end])")
-#        @bp
     
         # Find turning points by comparing cases
         if i_inside ≠ nothing || i_outside ≠ nothing
             t = t+1
-#            𝔹 = setdiff(1:length(μ), 𝔽)
-#            one_B = ones(size(𝔹))
-#            W[end][𝔹] = W[end-1][𝔹]
             push!(W,ones(W[end]))
             W[end][𝔹] = W[end-1][𝔹]
             λcurrent = max(λ_i_inside, λ_i_outside)
             if λ_i_inside == max(λ_i_inside, λ_i_outside)
-#                deleteat!(𝔽, findin(𝔽, i_inside))
                 𝔽 = setdiff(𝔽, [i_inside])
                 W[end][i_inside] = b
             else
@@ -57,18 +45,12 @@ function calculate_turningpoints_general(μ, Σ, l, u)
             one_F = ones(size(𝔽))
             𝔹 = setdiff(1:length(μ), 𝔽)
             one_B = ones(size(𝔹))
-            println("𝔽 is ", 𝔽)
-            println("Σ[𝔽,𝔽] is ", Σ[𝔽,𝔽])
-            println("W is ", W)
             Σ𝔽I = Σ[𝔽,𝔽]^-1
             γ = -λcurrent*(one_F'*Σ𝔽I*μ[𝔽])./(one_F'*Σ𝔽I*one_F) +
                 (1-one_B'*W[end][𝔹]+one_F'*Σ𝔽I*Σ[𝔽,𝔹]*W[end][𝔹])./
                   (one_F'*Σ𝔽I*one_F)
             W[end][𝔽] = -Σ𝔽I*Σ[𝔽,𝔹]*W[end][𝔹] + γ.*Σ𝔽I*one_F +
                         λcurrent*Σ𝔽I*μ[𝔽]
-            println("w: $(W[end])")
-            println("λcurrent: $λcurrent")
-            @bp
         end
         if i_inside == nothing && i_outside == nothing
             break
@@ -86,7 +68,7 @@ function starting_solution(μ, l, u)
     while sum(w)<1
         i_free = i
         w[i] = min(u[i], l[i]+1-sum(w))
-        i = argmax(μ, μ.<μ[i]) # indmax(μ-Inf*(μ.≥μ[i]))
+        i = argmax(μ, μ.<μ[i])
     end
     𝔽 = [i_free]
     return 𝔽, w
@@ -94,7 +76,6 @@ end
 
 function asset_moves_to_bound(μ, Σ, l, u, 𝔽, λcurrent, w)
     # A sole asset cannot move to bound
-    @bp
     if length(𝔽) == 1
         return nothing, nothing, nothing
     end
@@ -129,10 +110,7 @@ function asset_moves_to_bound(μ, Σ, l, u, 𝔽, λcurrent, w)
                     10eps(λcurrent)
                  end    
     i_inside = argmax(λ, [(λ[i]<λcurrent-correction) && (i in 𝔽) for i=1:length(λ)])
-    println("i_inside: $i_inside, condition: $([λ[i]<λcurrent-correction && (i in 𝔽) for i=1:length(λ)])")
-    println("λ: $λ")
     if i_inside == nothing
-        @bp
         return nothing, nothing, nothing
     end
     return i_inside, λ[i_inside], b[i_inside]
@@ -158,14 +136,9 @@ function asset_becomes_free(μ, Σ, 𝔽, λcurrent, w)
         Ci = first(-temp1 +
                    temp2)
         bi = w[i]
-        try
         λ[i] = Ci^-1*first((1-one_Bi'*w[𝔹i]+one_Fi'*Σ𝔽iI*Σ[𝔽i,𝔹i]*w[𝔹i])
                                                   *(Σ𝔽iI*one_Fi)[i_relative]
                            -(one_Fi'*Σ𝔽iI*one_Fi)*(bi+(Σ𝔽iI*Σ[𝔽i,𝔹i]*w[𝔹i])[i_relative]))
-        catch err
-            @bp
-            rethrow(err)
-        end
     end
     correction = if λcurrent == Inf
                     0.0
@@ -173,10 +146,7 @@ function asset_becomes_free(μ, Σ, 𝔽, λcurrent, w)
                     10eps(λcurrent)
                  end
     i_outside = argmax(λ, [(λ[i]<λcurrent-correction) && (i in 𝔹) for i=1:length(λ)])
-    println("outside: λcurrent=$λcurrent, λ[𝔹]=$(λ[𝔹])")
-    println("i_outside: $i_outside, condition: $([(λ[i]<λcurrent-correction) && i in 𝔹 for i=1:length(λ)])")
     if i_outside == nothing
-        @bp
         return nothing, nothing
     end
     return i_outside, λ[i_outside]
