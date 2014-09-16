@@ -7,8 +7,9 @@
 # p. 397ff
 #
 # note that this is only a reference implementation that is written to be
-# as close as possible to the pseudo-code in the paper
-# for a fast implementation, see the Fortran code (and Python bindings
+# as close as possible to the pseudo-code in the paper, rather than
+# for performance.
+# For a fast implementation, see the Fortran code (and Python bindings
 # for the Fortran code) at
 # https://bitbucket.org/afniedermayer/fast_critical_line_algorithm
 
