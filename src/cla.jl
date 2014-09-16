@@ -1,11 +1,11 @@
 # calculating the turning points given by Markowitz' critical line algorithm
 # see http://www.vwl.unibe.ch/papers/dp/dp0701.pdf p. 22 for a description
 
-using Debug
+#using Debug
 using Logging
 import Base.max
 
-Logging.configure(level=WARNING)
+#Logging.configure(level=WARNING)
 
 # extend max to allow for "nothing" as a parameter
 max(x::Nothing, y::Nothing) = nothing
@@ -25,55 +25,39 @@ argmax(x, condition) =
     end
 
 function calculate_turningpoints(μ, Σ)
-    @bp
     j = argmax(μ)
     𝔽 = [j]
     w = zeros(size(μ))
     w[j] = 1
-#    𝔽, w0 = starting_solution(μ, l, u)
     𝔹 = setdiff(1:length(μ), 𝔽)
     W = {w}
     λcurrent = Inf
     t = 1
     λ = zeros(size(μ))
-    #    WB = {}
     while true
-        println("𝔽: $𝔽, 𝔹: $𝔹")
-        println("w: $w")
         i_inside = nothing
         i_outside = nothing
         λ[:] = -Inf
         # Case a) Free asset moves to its bound
         if length(𝔽) > 1
-            println("case a")
             for i in 𝔽
                 one_F = ones(size(𝔽))
                 one_B = ones(size(𝔹))
                 i_relative = findfirst(𝔽, i)
-                println("i: $i, i_relative: $i_relative")
-                @bp
                 Σ𝔽I = Σ[𝔽,𝔽]^-1
-                temp = (-(one_F'*Σ𝔽I*one_F)*((Σ𝔽I*μ[𝔽])[i_relative]) +
-                           (one_F'*Σ𝔽I*μ[𝔽])*((Σ𝔽I*one_F)[i_relative]))
-                println("temp: $temp")
                 Ci = first(-(one_F'*Σ𝔽I*one_F)*((Σ𝔽I*μ[𝔽])[i_relative]) +
                            (one_F'*Σ𝔽I*μ[𝔽])*((Σ𝔽I*one_F)[i_relative]))
-                println("other temp: $(-(Σ𝔽I*one_F)[i_relative]/Ci)")
                 λ[i] = (Σ𝔽I*one_F)[i_relative]/Ci
             end
             i_inside = argmax(λ, [λ[i]<λcurrent && (i in 𝔽)
                                   for i=1:length(λ)])
-            println("λ: $λ, i_inside: $i_inside")
-            println([(λ[i]<λcurrent && (i in 𝔽)) ? λ[i] : -Inf for i=1:length(λ)])
         end
         # Case b) Asset on its bound becomes free
         if length(𝔽) < length(μ)
-            println("case b")
             for i in 𝔹
                 𝔽i = union(𝔽, [i])
                 𝔹i = setdiff(1:length(μ), 𝔽i)
                 i_relative = findfirst(𝔽i, i)
-                println("i: $i, i_relative: $i_relative, 𝔽i: $𝔽i")
                 one_Fi = ones(size(𝔽i))
                 one_Bi = ones(size(𝔹i))
                 Σ𝔽iI = Σ[𝔽i,𝔽i]^-1
@@ -85,8 +69,6 @@ function calculate_turningpoints(μ, Σ)
             end
             i_outside = argmax(λ, [λ[i]<λcurrent && (i in 𝔹)
                                    for i=1:length(λ)])
-            println("λ: $λ, i_outside: $i_outside")
-            println([(λ[i]<λcurrent && (i in 𝔹)) ? λ[i] : -Inf for i=1:length(λ)])
         end
         # Find turning point by comparing cases
         if i_inside == nothing && i_outside == nothing
@@ -102,9 +84,6 @@ function calculate_turningpoints(μ, Σ)
         one_F = ones(size(𝔽))
         𝔹 = setdiff(1:length(μ), 𝔽)
         one_B = ones(size(𝔹))
-        debug("𝔽 is ", 𝔽)
-        debug("Σ[𝔽,𝔽] is ", Σ[𝔽,𝔽])
-        debug("W is ", W)
         Σ𝔽I = Σ[𝔽,𝔽]^-1
         γ = first(-λcurrent*(one_F'*Σ𝔽I*μ[𝔽])./(one_F'*Σ𝔽I*one_F) +
                   1./(one_F'*Σ𝔽I*one_F))
@@ -112,12 +91,6 @@ function calculate_turningpoints(μ, Σ)
         w[𝔽] = λcurrent*Σ𝔽I*μ[𝔽] + γ*Σ𝔽I*one_F
         push!(W,w)
 
-        debug("i_inside: $i_inside, λ_i_inside: $(λ[i_inside])")
-        debug("i_outside: $i_outside, λ_i_outside: $(λ[i_outside])")
-        debug("𝔽: $𝔽, 𝔹: $𝔹")
-        debug("W: $(W[end])")
-        println("λcurrent: $λcurrent")
     end
     return W
 end
-        
