@@ -1,4 +1,17 @@
-#using Debug
+# reference implementation of critical line algorithm
+# general version with arbitrary lower bound and upper bound
+# vectors
+# see "Applying Markowitz's Critical Line Algorithm , with Daniel Niedermayer,
+# Handbook of Portfolio Construction: Contemporary Applications of
+# Markowitz Techniques", edited by John Guerard, London: Springer, 2010
+# p. 397ff
+#
+# note that this is only a reference implementation that is written to be
+# as close as possible to the pseudo-code in the paper
+# for a fast implementation, see the Fortran code (and Python bindings
+# for the Fortran code) at
+# https://bitbucket.org/afniedermayer/fast_critical_line_algorithm
+
 import Base.max
 
 # extend max to allow for "nothing" as a parameter
