@@ -6,6 +6,9 @@ max(x::Nothing, y::Nothing) = nothing
 max(x, y::Nothing) = x
 max(x::Nothing, y) = y
 
+# multiplier for the correction that makes sure that we do not
+# pick the same λ twice, because of numerical imprecision
+const CORRECTION_MULTIPLIER = 1000.0
 
 argmax(x, condition) =
     if any(condition)
@@ -90,7 +93,6 @@ function asset_moves_to_bound(μ, Σ, l, u, 𝔽, λcurrent, w)
         Ci = first(-(one_F'*Σ𝔽I*one_F)*((Σ𝔽I*μ[𝔽])[i_relative]) +
                    (one_F'*Σ𝔽I*μ[𝔽])*((Σ𝔽I*one_F)[i_relative]))
         if Ci == 0
-            @bp
             nothing
         end
         if Ci ≥ 0
@@ -103,11 +105,10 @@ function asset_moves_to_bound(μ, Σ, l, u, 𝔽, λcurrent, w)
         λ[i] = Ci^-1 * first(temp1
                              -temp2)
     end
-#    @bp
     correction = if λcurrent == Inf
                     0.0
                  else
-                    10eps(λcurrent)
+                    CORRECTION_MULTIPLIER*eps(λcurrent)
                  end    
     i_inside = argmax(λ, [(λ[i]<λcurrent-correction) && (i in 𝔽) for i=1:length(λ)])
     if i_inside == nothing
@@ -143,7 +144,7 @@ function asset_becomes_free(μ, Σ, 𝔽, λcurrent, w)
     correction = if λcurrent == Inf
                     0.0
                  else
-                    10eps(λcurrent)
+                    CORRECTION_MULTIPLIER*eps(λcurrent)
                  end
     i_outside = argmax(λ, [(λ[i]<λcurrent-correction) && (i in 𝔹) for i=1:length(λ)])
     if i_outside == nothing
