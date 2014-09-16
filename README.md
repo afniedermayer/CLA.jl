@@ -7,3 +7,6 @@ Markowitz Techniques", edited by John Guerard, London: Springer, 2010, see also 
 The reference implementation is intended to be as close as possible to the pseudo-code in the paper, even if this comes at the cost of performance.
 For a fast implementation, see the [repository with the Fortran version](https://bitbucket.org/afniedermayer/fast_critical_line_algorithm) (which also
 contains Python bindings for the Fortran code).
+
+The IPython notebooks "example_call.ipynb" and "example_call_gen.ipynb" contain sample code that calls the Julia functions. The notebooks also compare
+the results with the Python implementation (which just calls Fortran). To be able to call the Python code from the Julia notebooks, you need to get the [code](https://bitbucket.org/afniedermayer/fast_critical_line_algorithm) and set the path in the notebook to point to it.
