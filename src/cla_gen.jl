@@ -14,7 +14,7 @@ argmax(x, condition) =
       nothing
     end
 
-@debug function calculate_turningpoints_general(μ, Σ, l, u)
+function calculate_turningpoints_general(μ, Σ, l, u)
     #    @bp
     𝔽, w0 = starting_solution(μ, l, u)
     𝔹 = setdiff(1:length(μ), 𝔽)
@@ -22,6 +22,8 @@ argmax(x, condition) =
     λcurrent = Inf
     t = 0
     #    WB = {}
+    λcurrent_list = {}
+    𝔽list = {}
     while true
         # Case a) Free asset moves to its bound
         i_inside, λ_i_inside, b = asset_moves_to_bound(μ, Σ, l, u,
@@ -46,7 +48,8 @@ argmax(x, condition) =
             W[end][𝔹] = W[end-1][𝔹]
             λcurrent = max(λ_i_inside, λ_i_outside)
             if λ_i_inside == max(λ_i_inside, λ_i_outside)
-                deleteat!(𝔽, findin(𝔽, i_inside))
+#                deleteat!(𝔽, findin(𝔽, i_inside))
+                𝔽 = setdiff(𝔽, [i_inside])
                 W[end][i_inside] = b
             else
                 𝔽 = union(𝔽, [i_outside])
@@ -70,8 +73,10 @@ argmax(x, condition) =
         if i_inside == nothing && i_outside == nothing
             break
         end
+        push!(λcurrent_list, λcurrent)
+        push!(𝔽list, 𝔽)
     end
-    return W[2:end]
+    return W[2:end], λcurrent_list, 𝔽list
 end
 
 function starting_solution(μ, l, u)
@@ -87,13 +92,13 @@ function starting_solution(μ, l, u)
     return 𝔽, w
 end
 
-@debug function asset_moves_to_bound(μ, Σ, l, u, 𝔽, λcurrent, w)
+function asset_moves_to_bound(μ, Σ, l, u, 𝔽, λcurrent, w)
     # A sole asset cannot move to bound
     @bp
     if length(𝔽) == 1
         return nothing, nothing, nothing
     end
-    λ = zeros(size(μ))
+    λ = -Inf*ones(size(μ))
     b = zeros(size(μ))
     𝔹 = setdiff(1:length(μ), 𝔽)
     for i in 𝔽
@@ -118,8 +123,14 @@ end
                              -temp2)
     end
 #    @bp
-    i_inside = argmax(λ, [λ[i]<λcurrent && (i in 𝔽) for i=1:length(λ)])
-    println("i_inside: $i_inside, condition: $([λ[i]<λcurrent && (i in 𝔽) for i=1:length(λ)])")
+    correction = if λcurrent == Inf
+                    0.0
+                 else
+                    10eps(λcurrent)
+                 end    
+    i_inside = argmax(λ, [(λ[i]<λcurrent-correction) && (i in 𝔽) for i=1:length(λ)])
+    println("i_inside: $i_inside, condition: $([λ[i]<λcurrent-correction && (i in 𝔽) for i=1:length(λ)])")
+    println("λ: $λ")
     if i_inside == nothing
         @bp
         return nothing, nothing, nothing
@@ -127,12 +138,12 @@ end
     return i_inside, λ[i_inside], b[i_inside]
 end
 
-@debug function asset_becomes_free(μ, Σ, 𝔽, λcurrent, w)
+function asset_becomes_free(μ, Σ, 𝔽, λcurrent, w)
     # Skip procedure if all assets are free
     if length(𝔽) == length(μ)
         return nothing, nothing
     end
-    λ = zeros(size(μ))
+    λ = -Inf*ones(size(μ))
     b = zeros(size(μ))
     𝔹 = setdiff(1:length(μ), 𝔽)
     for i in 𝔹
@@ -156,8 +167,14 @@ end
             rethrow(err)
         end
     end
-    i_outside = argmax(λ, [λ[i]<λcurrent && i in 𝔹 for i=1:length(λ)])
-    println("i_outside: $i_outside, condition: $([λ[i]<λcurrent && i in 𝔹 for i=1:length(λ)])")
+    correction = if λcurrent == Inf
+                    0.0
+                 else
+                    10eps(λcurrent)
+                 end
+    i_outside = argmax(λ, [(λ[i]<λcurrent-correction) && (i in 𝔹) for i=1:length(λ)])
+    println("outside: λcurrent=$λcurrent, λ[𝔹]=$(λ[𝔹])")
+    println("i_outside: $i_outside, condition: $([(λ[i]<λcurrent-correction) && i in 𝔹 for i=1:length(λ)])")
     if i_outside == nothing
         @bp
         return nothing, nothing
