@@ -92,5 +92,5 @@ function calculate_turningpoints(μ, Σ)
         push!(W,w)
 
     end
-    return W
+    return W[2:end]  # don't return first element since it's equal to second
 end
