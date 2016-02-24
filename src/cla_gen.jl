@@ -14,11 +14,12 @@
 # https://bitbucket.org/afniedermayer/fast_critical_line_algorithm
 
 import Base.max
+using Compat
 
 # extend max to allow for "nothing" as a parameter
-max(x::Nothing, y::Nothing) = nothing
-max(x, y::Nothing) = x
-max(x::Nothing, y) = y
+max(x::@compat(Void), y::@compat(Void)) = nothing
+max(x, y::@compat(Void)) = x
+max(x::@compat(Void), y) = y
 
 # multiplier for the correction that makes sure that we do not
 # pick the same λ twice, because of numerical imprecision

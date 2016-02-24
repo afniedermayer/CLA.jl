@@ -5,4 +5,5 @@ A=rand(5,4)
 #u=.6*ones(4)
 
 include("cla.jl")
-calculate_turningpoints(μ, Σ)
+result = calculate_turningpoints(μ, Σ)
+println("result: $result")

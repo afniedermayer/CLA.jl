@@ -1,19 +1,22 @@
 # calculating the turning points given by Markowitz' critical line algorithm
 # see http://www.vwl.unibe.ch/papers/dp/dp0701.pdf p. 22 for a description
 
+using Compat
+
 #using Debug
 using Logging
 import Base.max
+import Base.getindex
 
 #Logging.configure(level=WARNING)
 
 # extend max to allow for "nothing" as a parameter
-max(x::Nothing, y::Nothing) = nothing
-max(x, y::Nothing) = x
-max(x::Nothing, y) = y
+max(x::@compat(Void), y::@compat(Void)) = nothing
+max(x, y::@compat(Void)) = x
+max(x::@compat(Void), y) = y
 
 # extend getindex to get x[i] == nothing for i==nothing
-getindex(x::Array, i::Nothing) = nothing
+getindex(x::Array, i::@compat(Void)) = nothing
 
 argmax(x) = indmax(x)
 
