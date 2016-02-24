@@ -34,11 +34,11 @@ argmax(x, condition) =
 function calculate_turningpoints_general(μ, Σ, l, u)
     𝔽, w0 = starting_solution(μ, l, u)
     𝔹 = setdiff(1:length(μ), 𝔽)
-    W = {w0}
+    W = Any[w0]
     λcurrent = Inf
     t = 0
-    λcurrent_list = {}
-    𝔽list = {}
+    λcurrent_list = Any[]
+    𝔽list = Any[]
     while true
         # Case a) Free asset moves to its bound
         i_inside, λ_i_inside, b = asset_moves_to_bound(μ, Σ, l, u,

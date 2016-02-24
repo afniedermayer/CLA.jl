@@ -30,7 +30,7 @@ function calculate_turningpoints(μ, Σ)
     w = zeros(size(μ))
     w[j] = 1
     𝔹 = setdiff(1:length(μ), 𝔽)
-    W = {w}
+    W = Any[w]
     λcurrent = Inf
     t = 1
     λ = zeros(size(μ))
