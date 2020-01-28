@@ -10,3 +10,5 @@ contains Python bindings for the Fortran code).
 
 The IPython notebooks "example_call.ipynb" and "example_call_gen.ipynb" contain sample code that calls the Julia functions. The notebooks also compare
 the results with the Python implementation (which just calls Fortran). To be able to call the Python code from the Julia notebooks, you need to get the [code](https://bitbucket.org/afniedermayer/fast_critical_line_algorithm) and set the path in the notebook to point to it.
+
+*Note:* This code was written in 2014 using [Julia 0.3](https://julialang.org/downloads/oldreleases/). It most likely won't work on newer version of Julia. Feel free to make a pull request if you manage to make the code run on Julia 1.0+.
